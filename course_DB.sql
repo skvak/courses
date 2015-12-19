@@ -13,16 +13,42 @@
 
 -- CREATE TABLE "Course" -----------------------------------
 CREATE TABLE `Course` ( 
-	`id` Int( 11 ) AUTO_INCREMENT NOT NULL,
+	`course_name` VarChar( 255 ) NOT NULL,
 	`price` Int( 10 ) NOT NULL,
 	`duration` Int( 3 ) NOT NULL,
 	`level` Int( 10 ) NOT NULL,
+	`id` Int( 11 ) AUTO_INCREMENT NOT NULL,
 	`teacher_id` Int( 11 ) NOT NULL,
 	`created` DateTime NOT NULL,
-	`course_name` VarChar( 255 ) NOT NULL,
 	PRIMARY KEY ( `id` ) )
 ENGINE = InnoDB
 AUTO_INCREMENT = 4;
+-- ---------------------------------------------------------
+
+
+-- CREATE TABLE "comments" ---------------------------------
+CREATE TABLE `comments` ( 
+	`id` Int( 11 ) AUTO_INCREMENT NOT NULL,
+	`user_id` Int( 11 ) NOT NULL,
+	`course_id` Int( 11 ) NULL,
+	`teacher_id` Int( 11 ) NULL,
+	`created` DateTime NOT NULL,
+	`text_review` Text NULL,
+	PRIMARY KEY ( `id` ) )
+ENGINE = InnoDB
+AUTO_INCREMENT = 2;
+-- ---------------------------------------------------------
+
+
+-- CREATE TABLE "lessons" ----------------------------------
+CREATE TABLE `lessons` ( 
+	`id` Int( 11 ) NOT NULL,
+	`lesson` VarChar( 100 ) NOT NULL,
+	`course_id` Int( 11 ) NOT NULL,
+	`text` VarChar( 100 ) NOT NULL,
+	`links_to_resources` VarChar( 255 ) NOT NULL,
+	PRIMARY KEY ( `id` ) )
+ENGINE = InnoDB;
 -- ---------------------------------------------------------
 
 
@@ -41,20 +67,6 @@ CREATE TABLE `teachers` (
 	PRIMARY KEY ( `id` ) )
 ENGINE = InnoDB
 AUTO_INCREMENT = 3;
--- ---------------------------------------------------------
-
-
--- CREATE TABLE "comments" ---------------------------------
-CREATE TABLE `comments` ( 
-	`id` Int( 11 ) AUTO_INCREMENT NOT NULL,
-	`user_id` Int( 11 ) NOT NULL,
-	`course_id` Int( 11 ) NULL,
-	`teacher_id` Int( 11 ) NULL,
-	`created` DateTime NOT NULL,
-	`text_review` Text NULL,
-	PRIMARY KEY ( `id` ) )
-ENGINE = InnoDB
-AUTO_INCREMENT = 2;
 -- ---------------------------------------------------------
 
 
@@ -78,22 +90,19 @@ AUTO_INCREMENT = 3;
 -- ---------------------------------------------------------
 
 
--- CREATE TABLE "course_program" ---------------------------
-CREATE TABLE `course_program` ( 
-	`id` Int( 11 ) NOT NULL,
-	`lesson` VarChar( 100 ) NOT NULL,
-	`course_id` Int( 11 ) NOT NULL,
-	`links_to_resources` VarChar( 255 ) NOT NULL,
-	`text` VarChar( 100 ) NOT NULL,
-	PRIMARY KEY ( `id` ) )
-ENGINE = InnoDB;
--- ---------------------------------------------------------
-
-
 -- Dump data of "Course" -----------------------------------
 INSERT INTO `Course`(`course_name`,`price`,`duration`,`level`,`id`,`teacher_id`,`created`) VALUES ( 'PHP', '5500', '60', '2', '1', '1', '0000-00-00 00:00:00' );
 INSERT INTO `Course`(`course_name`,`price`,`duration`,`level`,`id`,`teacher_id`,`created`) VALUES ( 'Phiton', '2000', '20', '1', '2', '1', '0000-00-00 00:00:00' );
 INSERT INTO `Course`(`course_name`,`price`,`duration`,`level`,`id`,`teacher_id`,`created`) VALUES ( 'JavaScript', '3800', '60', '1', '3', '2', '0000-00-00 00:00:00' );
+-- ---------------------------------------------------------
+
+
+-- Dump data of "comments" ---------------------------------
+INSERT INTO `comments`(`id`,`user_id`,`course_id`,`teacher_id`,`created`,`text_review`) VALUES ( '1', '1', '1', '1', '2015-12-17 14:02:00', 'Best of the best =)' );
+-- ---------------------------------------------------------
+
+
+-- Dump data of "lessons" ----------------------------------
 -- ---------------------------------------------------------
 
 
@@ -103,18 +112,79 @@ INSERT INTO `teachers`(`id`,`name`,`about`,`skills`,`phone`,`mail`,`skype`,`phot
 -- ---------------------------------------------------------
 
 
--- Dump data of "comments" ---------------------------------
-INSERT INTO `comments`(`id`,`user_id`,`course_id`,`teacher_id`,`created`,`text_review`) VALUES ( '1', '1', '1', '1', '2015-12-17 14:02:00', 'Best of the best =)' );
--- ---------------------------------------------------------
-
-
 -- Dump data of "users" ------------------------------------
 INSERT INTO `users`(`id`,`login`,`password`,`email`,`name`,`age`,`avatar`,`city`,`phone`,`date_register`,`level`,`surname`) VALUES ( '1', 'alenija', '12345', 'alenija23@gmail.com', 'Alona', '28', 'logo.png', 'Kharkiv', '380967673', '2015-10-11', '3', 'Verzina' );
 INSERT INTO `users`(`id`,`login`,`password`,`email`,`name`,`age`,`avatar`,`city`,`phone`,`date_register`,`level`,`surname`) VALUES ( '2', 'Kirill', '54321', 'kostichev.kirill@gmail.com', 'Kirill', '29', 'logo.png', 'Kharkiv', '380955790', '2015-02-03', '4', 'Kostichev' );
 -- ---------------------------------------------------------
 
 
--- Dump data of "course_program" ---------------------------
+-- CREATE INDEX "lnk_Course_teachers_2" --------------------
+CREATE INDEX `lnk_Course_teachers_2` USING BTREE ON `Course`( `teacher_id` );
+-- ---------------------------------------------------------
+
+
+-- CREATE INDEX "lnk_comments_Course" ----------------------
+CREATE INDEX `lnk_comments_Course` USING BTREE ON `comments`( `course_id` );
+-- ---------------------------------------------------------
+
+
+-- CREATE INDEX "lnk_comments_teachers" --------------------
+CREATE INDEX `lnk_comments_teachers` USING BTREE ON `comments`( `teacher_id` );
+-- ---------------------------------------------------------
+
+
+-- CREATE INDEX "lnk_comments_users" -----------------------
+CREATE INDEX `lnk_comments_users` USING BTREE ON `comments`( `user_id` );
+-- ---------------------------------------------------------
+
+
+-- CREATE INDEX "lnk_lessons_Course" -----------------------
+CREATE INDEX `lnk_lessons_Course` USING BTREE ON `lessons`( `course_id` );
+-- ---------------------------------------------------------
+
+
+-- CREATE LINK "lnk_Course_teachers" -----------------------
+ALTER TABLE `Course`
+	ADD CONSTRAINT `lnk_Course_teachers` FOREIGN KEY ( `teacher_id` )
+	REFERENCES `teachers`( `id` )
+	ON DELETE Cascade
+	ON UPDATE Cascade;
+-- ---------------------------------------------------------
+
+
+-- CREATE LINK "lnk_comments_teachers" ---------------------
+ALTER TABLE `comments`
+	ADD CONSTRAINT `lnk_comments_teachers` FOREIGN KEY ( `teacher_id` )
+	REFERENCES `teachers`( `id` )
+	ON DELETE Cascade
+	ON UPDATE Cascade;
+-- ---------------------------------------------------------
+
+
+-- CREATE LINK "lnk_comments_Course" -----------------------
+ALTER TABLE `comments`
+	ADD CONSTRAINT `lnk_comments_Course` FOREIGN KEY ( `course_id` )
+	REFERENCES `Course`( `id` )
+	ON DELETE Cascade
+	ON UPDATE Cascade;
+-- ---------------------------------------------------------
+
+
+-- CREATE LINK "lnk_comments_users" ------------------------
+ALTER TABLE `comments`
+	ADD CONSTRAINT `lnk_comments_users` FOREIGN KEY ( `user_id` )
+	REFERENCES `users`( `id` )
+	ON DELETE Cascade
+	ON UPDATE Cascade;
+-- ---------------------------------------------------------
+
+
+-- CREATE LINK "lnk_lessons_Course" ------------------------
+ALTER TABLE `lessons`
+	ADD CONSTRAINT `lnk_lessons_Course` FOREIGN KEY ( `course_id` )
+	REFERENCES `Course`( `id` )
+	ON DELETE Cascade
+	ON UPDATE Cascade;
 -- ---------------------------------------------------------
 
 
